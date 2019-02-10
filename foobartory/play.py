@@ -17,7 +17,3 @@ def play():
         for robot in Robot.robots.copy():
             robot.next_activity()
     print('you won in {}'.format(datetime.now() - start))
-
-
-if __name__ == '__main__':
-    play()
