@@ -3,8 +3,6 @@ from random import randrange, choice
 from time import sleep
 from uuid import uuid4
 
-from foobartory.errors import StockMissingError
-
 
 class Stock:
     def __init__(self):
@@ -38,19 +36,17 @@ class Robot:
         sleep(duration * cls.DURATION_MODIFIER)
 
     @_change_activity
-    def mine_foo(self):
+    def _mine_foo(self):
         self.wait(1)
         self.stock.foo.append(uuid4())
 
     @_change_activity
-    def mine_bar(self):
+    def _mine_bar(self):
         self.wait(randrange(5, 20) / 10)
         self.stock.bar.append(uuid4())
 
     @_change_activity
-    def assemble_foobar(self):
-        if not (self.stock.foo and self.stock.bar):
-            raise StockMissingError()
+    def _assemble_foobar(self):
         self.wait(2)
         bar = self.stock.bar.pop()
         if randrange(100) < 60:
@@ -58,9 +54,7 @@ class Robot:
             self.stock.foobar.append('{}-{}'.format(foo, bar))
 
     @_change_activity
-    def sell_foobars(self, nb_to_sell):
-        if nb_to_sell > len(self.stock.foobar):
-            raise StockMissingError()
+    def _sell_foobars(self, nb_to_sell):
         if not (1 <= nb_to_sell <= 5):
             raise ValueError()
         self.wait(10)
@@ -68,9 +62,7 @@ class Robot:
         self.stock.money += nb_to_sell
 
     @_change_activity
-    def buy_robot(self):
-        if not (len(self.stock.foo) >= 6 and self.stock.money >= 3):     # TODO Stock manage errors
-            raise StockMissingError()
+    def _buy_robot(self):
         self.stock.foo = self.stock.foo[:-6]
         self.stock.money -= 3
         self.robots.append(Robot())
@@ -78,14 +70,14 @@ class Robot:
 
     def next_activity(self):
         if len(self.stock.foo) >= 6 and self.stock.money >= 3:
-            self.buy_robot()
+            self._buy_robot()
         elif len(self.stock.foobar) == 5:
-            self.sell_foobars(5)
+            self._sell_foobars(5)
         elif len(self.stock.foo) >= 5 and len(self.stock.bar) >= 5:
-            self.assemble_foobar()
-        elif self.current_activity == self.mine_foo.__name__ and len(self.stock.foo) < 10:
-            self.mine_foo()
-        elif self.current_activity == self.mine_bar.__name__ and len(self.stock.bar) < 10:
-            self.mine_bar()
+            self._assemble_foobar()
+        elif self.current_activity == self._mine_foo.__name__ and len(self.stock.foo) < 10:
+            self._mine_foo()
+        elif self.current_activity == self._mine_bar.__name__ and len(self.stock.bar) < 10:
+            self._mine_bar()
         else:
-            choice([self.mine_foo, self.mine_bar])()
+            choice([self._mine_foo, self._mine_bar])()
