@@ -73,7 +73,7 @@ class RandomCall:
         self.stop = stop
 
     def __eq__(self, other):
-        return self.start < other < self.stop
+        return self.start <= other <= self.stop
 
 
 class TestMineBar(BaseTest):
@@ -93,13 +93,13 @@ class TestMineBar(BaseTest):
         self.mocked_wait.assert_has_calls([call(RandomCall(0.5, 2))])
 
 
-@pytest.mark.skip('need to seed random')
 class TestAssembleFooBarOk(BaseTest):
     @classmethod
     def setup_class(cls):
         cls.mocked_wait = MagicMock()
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
+        monkeypatch.setattr(foobartory.robot, 'randrange', lambda x: 50)
         cls.robot = Robot()
         cls.robot.stock.foo = ['uuid']
         cls.robot.stock.bar = ['uuid']
@@ -119,13 +119,13 @@ class TestAssembleFooBarOk(BaseTest):
         self.mocked_wait.assert_has_calls([call(2)])
 
 
-@pytest.mark.skip('need to seed random')
 class TestFooBarUniqueID(BaseTest):
     @classmethod
     def setup_class(cls):
         cls.mocked_wait = MagicMock()
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
+        monkeypatch.setattr(foobartory.robot, 'randrange', lambda x, y=None: 50 if y is None else 1)
         cls.robot = Robot()
         cls.robot.DURATION_MODIFIER = 0.01
         cls.robot._mine_foo()
