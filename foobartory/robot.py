@@ -12,11 +12,13 @@ class Stock:    # TODO: uuid
     money = 0
 
 
-def _change_activity(new_activity):     # TODO: manage start & same activity ...
+def _change_activity(new_activity):
     @wraps(new_activity)
-    def wrapper(*args, **kwargs):
-        Robot.wait(5)
-        return new_activity(*args, **kwargs)
+    def wrapper(self, *args, **kwargs):
+        if self.current_activity is not None and self.current_activity != new_activity.__name__:
+            Robot.wait(5)
+        self.current_activity = new_activity.__name__
+        return new_activity(self, *args, **kwargs)
 
     return wrapper
 
@@ -24,6 +26,9 @@ def _change_activity(new_activity):     # TODO: manage start & same activity ...
 class Robot:
     DURATION_MODIFIER = 1
     stock = Stock()
+
+    def __init__(self):
+        self.current_activity = None
 
     @classmethod
     def wait(cls, duration):

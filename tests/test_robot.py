@@ -28,6 +28,42 @@ class TestMineFoo(BaseTest):
         assert Robot.stock.foo == 1
 
     def test_duration(self):
+        self.mocked_wait.assert_has_calls([call(1)])
+
+
+class TestChangeActivityFromSameActivity(BaseTest):
+    @classmethod
+    def setup_class(cls):
+        cls.mocked_wait = MagicMock()
+        monkeypatch = MonkeyPatch()
+        monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
+        cls.robot = Robot()
+        cls.robot.DURATION_MODIFIER = 0.01
+        cls.robot.mine_foo()
+        cls.robot.mine_foo()
+
+    def test_foo_created(self):
+        assert Robot.stock.foo == 2
+
+    def test_duration(self):
+        self.mocked_wait.assert_has_calls([call(1), call(1)])
+
+
+class TestChangeActivityFromAnotherActivity(BaseTest):
+    @classmethod
+    def setup_class(cls):
+        cls.mocked_wait = MagicMock()
+        monkeypatch = MonkeyPatch()
+        monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
+        cls.robot = Robot()
+        cls.robot.DURATION_MODIFIER = 0.01
+        cls.robot.current_activity = 'some_activity'
+        cls.robot.mine_foo()
+
+    def test_foo_created(self):
+        assert Robot.stock.foo == 1
+
+    def test_duration(self):
         self.mocked_wait.assert_has_calls([call(5), call(1)])
 
 
@@ -54,7 +90,7 @@ class TestMineBar(BaseTest):
         assert Robot.stock.bar == 1
 
     def test_duration(self):
-        self.mocked_wait.assert_has_calls([call(5), call(RandomCall(0.5, 2))])
+        self.mocked_wait.assert_has_calls([call(RandomCall(0.5, 2))])
 
 
 @pytest.mark.skip('need to seed random')
@@ -80,7 +116,7 @@ class TestAssembleFooBarOk(BaseTest):
         assert Robot.stock.foobar == 1
 
     def test_duration(self):
-        self.mocked_wait.assert_has_calls([call(5), call(2)])
+        self.mocked_wait.assert_has_calls([call(2)])
 
 
 class TestAssembleFooBarKoMissingBar(BaseTest):
@@ -131,7 +167,7 @@ class TestSellFooBarOk(BaseTest):
         assert Robot.stock.money == 2
 
     def test_duration(self):
-        self.mocked_wait.assert_has_calls([call(5), call(10)])
+        self.mocked_wait.assert_has_calls([call(10)])
 
 
 class TestSellFooBarOkExactAmount(BaseTest):
@@ -152,7 +188,7 @@ class TestSellFooBarOkExactAmount(BaseTest):
         assert Robot.stock.money == 5
 
     def test_duration(self):
-        self.mocked_wait.assert_has_calls([call(5), call(10)])
+        self.mocked_wait.assert_has_calls([call(10)])
 
 
 class TestSellFooBarKoMissingFooBar(BaseTest):
@@ -222,7 +258,7 @@ class TestBuyRobotOk(BaseTest):
         assert isinstance(self.new_robot, Robot)
 
     def test_duration(self):
-        self.mocked_wait.assert_has_calls([call(5)])
+        self.mocked_wait.assert_not_called()
 
 
 class TestBuyRobotOkExactAmount(BaseTest):
@@ -247,7 +283,7 @@ class TestBuyRobotOkExactAmount(BaseTest):
         assert isinstance(self.new_robot, Robot)
 
     def test_duration(self):
-        self.mocked_wait.assert_has_calls([call(5)])
+        self.mocked_wait.assert_not_called()
 
 
 class TestBueRobotKoMissingFoo(BaseTest):
