@@ -1,0 +1,2 @@
+class StockMissingError(Exception):
+    pass
