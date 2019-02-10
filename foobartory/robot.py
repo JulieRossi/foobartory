@@ -28,6 +28,7 @@ def _change_activity(new_activity):
 class Robot:
     DURATION_MODIFIER = 1
     stock = Stock()
+    robots = []
 
     def __init__(self):
         self.current_activity = None
@@ -72,7 +73,7 @@ class Robot:
             raise StockMissingError()
         self.stock.foo = self.stock.foo[:-6]
         self.stock.money -= 3
-        return Robot()
+        self.robots.append(Robot())
 
 
 

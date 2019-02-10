@@ -12,6 +12,7 @@ class BaseTest:
     @classmethod
     def teardown_class(cls):
         Robot.stock = Stock()
+        Robot.robots = []
 
 
 class TestMineFoo(BaseTest):
@@ -266,7 +267,7 @@ class TestBuyRobotOk(BaseTest):
         cls.robot.stock.foo = ['uuid'] * 10
         cls.robot.stock.money = 10
         cls.robot.DURATION_MODIFIER = 0.01
-        cls.new_robot = cls.robot.buy_robot()
+        cls.robot.buy_robot()
 
     def test_foobar_used(self):
         assert len(Robot.stock.foo) == 4
@@ -275,7 +276,7 @@ class TestBuyRobotOk(BaseTest):
         assert Robot.stock.money == 7
 
     def test_robot_created(self):
-        assert isinstance(self.new_robot, Robot)
+        assert len(Robot.robots) == 1
 
     def test_duration(self):
         self.mocked_wait.assert_not_called()
@@ -300,7 +301,7 @@ class TestBuyRobotOkExactAmount(BaseTest):
         assert Robot.stock.money == 0
 
     def test_robot_created(self):
-        assert isinstance(self.new_robot, Robot)
+        assert len(Robot.robots) == 1
 
     def test_duration(self):
         self.mocked_wait.assert_not_called()
