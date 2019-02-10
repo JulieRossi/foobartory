@@ -25,7 +25,7 @@ class TestMineFoo(BaseTest):
         cls.robot.mine_foo()
 
     def test_foo_created(self):
-        assert Robot.stock.foo == 1
+        assert len(Robot.stock.foo) == 1
 
     def test_duration(self):
         self.mocked_wait.assert_has_calls([call(1)])
@@ -43,7 +43,7 @@ class TestChangeActivityFromSameActivity(BaseTest):
         cls.robot.mine_foo()
 
     def test_foo_created(self):
-        assert Robot.stock.foo == 2
+        assert len(Robot.stock.foo) == 2
 
     def test_duration(self):
         self.mocked_wait.assert_has_calls([call(1), call(1)])
@@ -61,7 +61,7 @@ class TestChangeActivityFromAnotherActivity(BaseTest):
         cls.robot.mine_foo()
 
     def test_foo_created(self):
-        assert Robot.stock.foo == 1
+        assert len(Robot.stock.foo) == 1
 
     def test_duration(self):
         self.mocked_wait.assert_has_calls([call(5), call(1)])
@@ -87,7 +87,7 @@ class TestMineBar(BaseTest):
         cls.robot.mine_bar()
 
     def test_bar_created(self):
-        assert Robot.stock.bar == 1
+        assert len(Robot.stock.bar) == 1
 
     def test_duration(self):
         self.mocked_wait.assert_has_calls([call(RandomCall(0.5, 2))])
@@ -101,22 +101,42 @@ class TestAssembleFooBarOk(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foo = 1
-        cls.robot.stock.bar = 1
+        cls.robot.stock.foo = ['uuid']
+        cls.robot.stock.bar = ['uuid']
         cls.robot.DURATION_MODIFIER = 0.01
         cls.robot.assemble_foobar()
 
     def test_bar_used(self):
-        assert Robot.stock.bar == 0
+        assert len(Robot.stock.bar) == 0
 
     def test_foo_used(self):
-        assert Robot.stock.foo == 0
+        assert len(Robot.stock.foo) == 0
 
     def test_foobar_created(self):
-        assert Robot.stock.foobar == 1
+        assert len(Robot.stock.foobar) == 1
 
     def test_duration(self):
         self.mocked_wait.assert_has_calls([call(2)])
+
+
+@pytest.mark.skip('need to seed random')
+class TestFooBarUniqueID(BaseTest):
+    @classmethod
+    def setup_class(cls):
+        cls.mocked_wait = MagicMock()
+        monkeypatch = MonkeyPatch()
+        monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
+        cls.robot = Robot()
+        cls.robot.DURATION_MODIFIER = 0.01
+        cls.robot.mine_foo()
+        cls.robot.mine_foo()
+        cls.robot.mine_bar()
+        cls.robot.mine_bar()
+        cls.robot.assemble_foobar()
+        cls.robot.assemble_foobar()
+
+    def test_bar_used(self):
+        assert Robot.stock.foobar[0] != Robot.stock.foobar[1]
 
 
 class TestAssembleFooBarKoMissingBar(BaseTest):
@@ -126,7 +146,7 @@ class TestAssembleFooBarKoMissingBar(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foo = 1
+        cls.robot.stock.foo = ['uuid']
         cls.robot.DURATION_MODIFIER = 0.01
 
     def test_raises(self):
@@ -141,7 +161,7 @@ class TestAssembleFooBarKoMissingFoo(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.bar = 1
+        cls.robot.stock.bar = ['uuid']
         cls.robot.DURATION_MODIFIER = 0.01
 
     def test_raises(self):
@@ -156,14 +176,14 @@ class TestSellFooBarOk(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foobar = 5
+        cls.robot.stock.foobar = ['uuid'] * 5
         cls.robot.DURATION_MODIFIER = 0.01
         cls.robot.sell_foobars(2)
 
     def test_foobar_used(self):
-        assert Robot.stock.foobar == 3
+        assert len(Robot.stock.foobar) == 3
 
-    def test_mony_received(self):
+    def test_money_received(self):
         assert Robot.stock.money == 2
 
     def test_duration(self):
@@ -177,12 +197,12 @@ class TestSellFooBarOkExactAmount(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foobar = 5
+        cls.robot.stock.foobar = ['uuid'] * 5
         cls.robot.DURATION_MODIFIER = 0.01
         cls.robot.sell_foobars(5)
 
     def test_foobar_used(self):
-        assert Robot.stock.foobar == 0
+        assert len(Robot.stock.foobar) == 0
 
     def test_mony_received(self):
         assert Robot.stock.money == 5
@@ -198,7 +218,7 @@ class TestSellFooBarKoMissingFooBar(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foobar = 1
+        cls.robot.stock.foobar = ['uuid']
         cls.robot.DURATION_MODIFIER = 0.01
 
     def test_raises(self):
@@ -213,7 +233,7 @@ class TestSellFooBarKoNbToSellTooBig(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foobar = 10
+        cls.robot.stock.foobar = ['uuid'] * 10
         cls.robot.DURATION_MODIFIER = 0.01
 
     def test_raises(self):
@@ -228,7 +248,7 @@ class TestSellFooBarKoNbToSellTooSmall(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foobar = 10
+        cls.robot.stock.foobar = ['uuid'] * 10
         cls.robot.DURATION_MODIFIER = 0.01
 
     def test_raises(self):
@@ -243,13 +263,13 @@ class TestBuyRobotOk(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foo = 10
+        cls.robot.stock.foo = ['uuid'] * 10
         cls.robot.stock.money = 10
         cls.robot.DURATION_MODIFIER = 0.01
         cls.new_robot = cls.robot.buy_robot()
 
     def test_foobar_used(self):
-        assert Robot.stock.foo == 4
+        assert len(Robot.stock.foo) == 4
 
     def test_money_spent(self):
         assert Robot.stock.money == 7
@@ -268,13 +288,13 @@ class TestBuyRobotOkExactAmount(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foo = 6
+        cls.robot.stock.foo = ['uuid'] * 6
         cls.robot.stock.money = 3
         cls.robot.DURATION_MODIFIER = 0.01
         cls.new_robot = cls.robot.buy_robot()
 
     def test_foobar_used(self):
-        assert Robot.stock.foo == 0
+        assert len(Robot.stock.foo) == 0
 
     def test_money_spent(self):
         assert Robot.stock.money == 0
@@ -293,7 +313,7 @@ class TestBueRobotKoMissingFoo(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foo = 1
+        cls.robot.stock.foo = ['uuid']
         cls.robot.stock.money = 10
         cls.robot.DURATION_MODIFIER = 0.01
 
@@ -309,7 +329,7 @@ class TestBuyRobotKoMissingMoney(BaseTest):
         monkeypatch = MonkeyPatch()
         monkeypatch.setattr(foobartory.robot.Robot, 'wait', cls.mocked_wait)
         cls.robot = Robot()
-        cls.robot.stock.foo = 10
+        cls.robot.stock.foo = ['uuid'] * 10
         cls.robot.stock.money = 1
         cls.robot.DURATION_MODIFIER = 0.01
 

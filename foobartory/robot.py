@@ -1,15 +1,17 @@
 from functools import wraps
 from random import randrange
 from time import sleep
+from uuid import uuid4
 
 from foobartory.errors import StockMissingError
 
 
-class Stock:    # TODO: uuid
-    foo = 0
-    bar = 0
-    foobar = 0
-    money = 0
+class Stock:
+    def __init__(self):
+        self.foo = []
+        self.bar = []
+        self.foobar = []
+        self.money = 0
 
 
 def _change_activity(new_activity):
@@ -37,38 +39,38 @@ class Robot:
     @_change_activity
     def mine_foo(self):
         self.wait(1)
-        self.stock.foo += 1
+        self.stock.foo.append(uuid4())
 
     @_change_activity
     def mine_bar(self):
         self.wait(randrange(5, 20) / 10)
-        self.stock.bar += 1
+        self.stock.bar.append(uuid4())
 
     @_change_activity
     def assemble_foobar(self):
         if not (self.stock.foo and self.stock.bar):
             raise StockMissingError()
         self.wait(2)
-        self.stock.bar -= 1
+        bar = self.stock.bar.pop()
         if randrange(100) < 60:
-            self.stock.foo -= 1
-            self.stock.foobar += 1
+            foo = self.stock.foo.pop()
+            self.stock.foobar.append('{}-{}'.format(foo, bar))
 
     @_change_activity
     def sell_foobars(self, nb_to_sell):
-        if nb_to_sell > self.stock.foobar:
+        if nb_to_sell > len(self.stock.foobar):
             raise StockMissingError()
         if not (1 <= nb_to_sell <= 5):
             raise ValueError()
         self.wait(10)
-        self.stock.foobar -= nb_to_sell
+        self.stock.foobar = self.stock.foobar[:-nb_to_sell]
         self.stock.money += nb_to_sell
 
     @_change_activity
     def buy_robot(self):
-        if not (self.stock.foo >= 6 and self.stock.money >= 3):     # TODO Stock manage errors
+        if not (len(self.stock.foo) >= 6 and self.stock.money >= 3):     # TODO Stock manage errors
             raise StockMissingError()
-        self.stock.foo -= 6
+        self.stock.foo = self.stock.foo[:-6]
         self.stock.money -= 3
         return Robot()
 
