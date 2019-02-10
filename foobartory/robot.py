@@ -74,6 +74,7 @@ class Robot:
         self.stock.foo = self.stock.foo[:-6]
         self.stock.money -= 3
         self.robots.append(Robot())
+        print('{} robots'.format(len(self.robots)))
 
     def next_activity(self):
         if len(self.stock.foo) >= 6 and self.stock.money >= 3:
