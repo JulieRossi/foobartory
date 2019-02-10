@@ -1,5 +1,5 @@
 from functools import wraps
-from random import randrange
+from random import randrange, choice
 from time import sleep
 from uuid import uuid4
 
@@ -75,7 +75,16 @@ class Robot:
         self.stock.money -= 3
         self.robots.append(Robot())
 
-
-
-
-
+    def next_activity(self):
+        if len(self.stock.foo) >= 6 and self.stock.money >= 3:
+            self.buy_robot()
+        elif len(self.stock.foobar) == 5:
+            self.sell_foobars(5)
+        elif len(self.stock.foo) >= 5 and len(self.stock.bar) >= 5:
+            self.assemble_foobar()
+        elif self.current_activity == self.mine_foo.__name__ and len(self.stock.foo) < 10:
+            self.mine_foo()
+        elif self.current_activity == self.mine_bar.__name__ and len(self.stock.bar) < 10:
+            self.mine_bar()
+        else:
+            choice([self.mine_foo, self.mine_bar])()
